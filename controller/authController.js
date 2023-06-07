@@ -45,7 +45,7 @@ exports.login = catchAsync(async (req, res, next) => {
     return next(new AppError('Incorrect Email or password', 401));
   }
 
-  // 3) IF Everything ok ,send tolen to client
+  // 3) IF Everything ok ,send token to client
   const token = signToken(user._id);
   res.status(200).json({
     status: 'success',
@@ -93,3 +93,15 @@ exports.protect = catchAsync(async (req, res, next) => {
   req.user = currentUser;
   next();
 });
+
+exports.restrictTo = (...roles) => {
+  return (req, res, next) => {
+    // roles ['admin', 'lead-guide'] role='user
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new AppError('You do not have permission to perform this action', 403)
+      );
+    }
+    next();
+  };
+};
